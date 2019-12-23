@@ -1,0 +1,2 @@
+FLASK_APP=carrent.py
+FLASK_DEBUG=1

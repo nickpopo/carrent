@@ -1,8 +1,8 @@
-from wtforms import StringField, PasswordField, BooleanField, \
+from wtforms import StringField, SelectField, PasswordField, BooleanField, \
 	SubmitField
 from wtforms.validators import DataRequired, Email, EqualTo, ValidationError
 from flask_wtf import FlaskForm
-from app.models import User
+from app.models import User, Language
 
 
 class LoginForm(FlaskForm):
@@ -15,9 +15,16 @@ class LoginForm(FlaskForm):
 class RegistrationForm(FlaskForm):
 	username = StringField('Username', validators=[DataRequired()])
 	email = StringField('Email', validators=[DataRequired(), Email()])
+	language = SelectField('Language', coerce=int, validators=[DataRequired()])
 	password = PasswordField('Password', validators=[DataRequired()])
 	password2 = PasswordField('Repeat Password', validators=[DataRequired(), EqualTo('password')])
 	submit = SubmitField('Register')
+
+	# Populate choices of language.
+	def __init__(self, *args, **kwargs):
+		super(RegistrationForm, self).__init__(*args, **kwargs)
+		self.language.choices = Language.choices()
+
 
 	# Create custom validators. 
 	# Pattern validate_<field_name>, WTForms takes those pattern as custom validators 

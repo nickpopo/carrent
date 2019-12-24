@@ -57,9 +57,13 @@ def create_car():
 	form = CarForm()
 	if form.validate_on_submit():
 		car = Car()
+		# Сколько языков заполнено столько и создаем
+		langs = Language.query.all()
+		for key in form.data:
+			if key in [lang.code for lang in langs]:
+				lang = [lang for lang in langs if lang.code == key]
+				car.names.append(CarLanguage(name=form.data[key], language=lang[0]))
 		car.year = int(form.year.data)
-		en = Language.query.filter_by(code='en').one()
-		car.names.append(CarLanguage(en, form.name.data))
 		db.session.add(car)
 		db.session.commit()
 		flash('You successfuly create new car')

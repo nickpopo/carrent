@@ -82,6 +82,11 @@ class Car(db.Model):
 							back_populates='car', lazy='dynamic')
 	timestamp = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+	def __repr__(self):
+		return '<Car {}>'.format(self.get_name('en'))
+
+
 	# Get car's name for particular language. 
 	def get_name(self, code='en'):
 		q = self.names.join('language').filter(Language.code==code).one()

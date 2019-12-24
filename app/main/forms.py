@@ -4,7 +4,6 @@ from wtforms.validators import DataRequired, ValidationError, NumberRange
 from flask_wtf import FlaskForm
 from app.models import User, Language
 
-
 class EditProfileForm(FlaskForm):
 	username = StringField('Username', validators=[DataRequired()])
 	language = SelectField('Language', coerce=int, validators=[DataRequired()])
@@ -26,8 +25,17 @@ class EditProfileForm(FlaskForm):
 
 
 class CarForm(FlaskForm):
-	name = StringField('Name', validators=[DataRequired()])
-	year = IntegerField('Built Year', validators=[ 
-				DataRequired(), NumberRange(min=1900, max=datetime.now().year)]
-			)
-	submit = SubmitField('Submit')
+
+	@classmethod
+	def add_fields(cls, app):
+		with app.app_context():
+			# Add dynamic fields.
+			langs = Language.query.all()
+			for lang in langs:
+				if lang.code == 'en':
+					setattr(cls, lang.code, StringField(f'{lang.name} name', validators=[DataRequired()]))
+				else:
+					setattr(cls, lang.code, StringField(f'{lang.name} name'))
+
+			setattr(cls, 'year', IntegerField('Built Year', validators=[DataRequired(), NumberRange(min=1900, max=datetime.now().year)]))
+			setattr(cls, 'submit', SubmitField('Submit'))

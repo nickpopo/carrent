@@ -1,3 +1,4 @@
+from app.main.forms import CarForm
 from app import create_app, db
 from app.models import User, Language, Car, \
 	CarLanguage
@@ -5,6 +6,7 @@ from app.models import User, Language, Car, \
 
 app = create_app()
 
+CarForm.add_fields(app)
 
 @app.shell_context_processor
 def make_shell_context():

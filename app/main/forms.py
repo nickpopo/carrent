@@ -2,7 +2,7 @@ from datetime import datetime
 from wtforms import StringField, SelectField, SubmitField, IntegerField
 from wtforms.validators import DataRequired, ValidationError, NumberRange
 from flask_wtf import FlaskForm
-from app.models import User, Language
+from app.models import User, Language, Car
 
 class EditProfileForm(FlaskForm):
 	username = StringField('Username', validators=[DataRequired()])
@@ -22,6 +22,14 @@ class EditProfileForm(FlaskForm):
 			user = User.query.filter_by(username=self.username.data).first()
 			if user is not None:
 				raise ValidationError('Please use a different username.')
+
+class UserAddCarForm(FlaskForm):
+	car = SelectField('Car', coerce=int, validators=[DataRequired()])
+	submit = SubmitField('Add Car')
+
+	def __init__(self, *args, **kwargs):
+		super(UserAddCarForm, self).__init__(*args, **kwargs)
+		self.car.choices = Car.choices()
 
 
 class CarForm(FlaskForm):

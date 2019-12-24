@@ -2,7 +2,7 @@ from flask import render_template, flash, redirect, url_for, request, current_ap
 from flask_login import current_user, login_required
 from app import db
 from app.models import User, Language, Car, CarLanguage
-from .forms import EditProfileForm, CarForm
+from .forms import EditProfileForm, CarForm, UserAddCarForm
 from . import bp
 
 
@@ -26,11 +26,31 @@ def explore():
 	return render_template('index.html', title='Explore', cars=cars.items,
 						   next_url=next_url, prev_url=prev_url)
 
-@bp.route('/user/<username>')
+
+@bp.route('/user/<username>', methods=['GET', 'POST'])
 @login_required
 def user(username):
 	user = User.query.filter_by(username=username).first_or_404()
-	return render_template('user.html', title='User Profile', user=user)
+
+	page = request.args.get('page', 1, type=int)
+	cars = user.cars.order_by(Car.timestamp.desc()).paginate(
+		page, current_app.config['POSTS_PER_PAGE'], False)
+	next_url = url_for('.user', page=cars.next_num) \
+		if cars.has_next else None
+	prev_url = url_for('.user', page=cars.prev_num) \
+		if cars.has_prev else None
+
+	form = UserAddCarForm()
+	
+	if form.validate_on_submit():
+		car = Car.query.get(form.car.data)
+		user.cars.append(car)
+		db.session.commit()
+		flash('Successfuly add {} to {}'.format(car.get_name(), user.username))
+		return redirect(url_for('.user', username=user.username))
+
+	return render_template('user.html', title='User Profile', 
+				user=user, form=form, cars=cars.items, next_url=next_url, prev_url=prev_url)
 
 
 @bp.route('/edit_profile', methods=['GET', 'POST'])

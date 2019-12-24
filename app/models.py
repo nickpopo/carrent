@@ -8,6 +8,16 @@ from app import db, login
 from flask_login import UserMixin
 
 
+class FormMixin(object):
+	
+	@classmethod
+	def choices(cls):
+		choices = []
+		for obj in cls.query.all():
+			choices.append((obj.id, obj.get_name()))
+		return choices
+
+
 class User(UserMixin, db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	username = db.Column(db.String(64), index=True, unique=True)
@@ -53,7 +63,7 @@ usercar_table = db.Table('usercar', db.Model.metadata,
 			  primary_key=True)
 	)
 
-class Language(db.Model):
+class Language(db.Model, FormMixin):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(64), unique=True)
 	code = db.Column(db.String(5), unique=True)
@@ -62,14 +72,6 @@ class Language(db.Model):
 
 	def __repr__(self):
 		return '<Language {}>'.format(self.code)
-
-
-	@classmethod
-	def choices(cls):
-		choices = []
-		for obj in cls.query.all():
-			choices.append((obj.id, obj.name))
-		return choices
 
 	@staticmethod
 	def insert_values():
@@ -83,8 +85,11 @@ class Language(db.Model):
 			db.session.add(new_lang)
 		db.session.commit()
 
+	def get_name(self):
+		return self.name
 
-class Car(db.Model):
+
+class Car(db.Model, FormMixin):
 	id = db.Column(db.Integer, primary_key=True)
 	year = db.Column(db.String(4), index=True)
 	names = db.relationship('CarLanguage', cascade='all, delete-orphan', 
@@ -97,11 +102,13 @@ class Car(db.Model):
 		return '<Car {}>'.format(self.get_name('en'))
 
 	# Get car's name for particular language. 
-	def get_name(self, code='en'):
+	def get_name(self, code='en', year=True):
 		q = self.names.join('language').filter(Language.code==code).one()
 		if not q:
 			return
-		return q.name
+		if not self.year:
+			return q.name
+		return '|'.join((q.name, self.year)) if year else q.name
 
 
 # Association table.

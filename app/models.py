@@ -49,6 +49,11 @@ class Language(db.Model):
 	name = db.Column(db.String(64), unique=True)
 	code = db.Column(db.String(5), unique=True)
 	users = db.relationship('User', back_populates='language')
+	cars = db.relationship('CarLanguage', back_populates='language')
+
+	def __repr__(self):
+		return '<Language {}>'.format(self.code)
+
 
 	@classmethod
 	def choices(cls):
@@ -68,3 +73,38 @@ class Language(db.Model):
 			new_lang = Language(name=name, code=code)
 			db.session.add(new_lang)
 		db.session.commit()
+
+
+class Car(db.Model):
+	id = db.Column(db.Integer, primary_key=True)
+	year = db.Column(db.String(4), index=True)
+	names = db.relationship('CarLanguage', cascade='all, delete-orphan', 
+							back_populates='car', lazy='dynamic')
+	timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+	# Get car's name for particular language. 
+	def get_name(self, code='en'):
+		q = self.names.join('language').filter(Language.code==code).one()
+		if not q:
+			return
+		return q.name
+
+
+# Association table.
+class CarLanguage(db.Model):
+	__tablename__ = 'car_language'
+	car_id = db.Column(db.Integer, db.ForeignKey('car.id'), primary_key=True)
+	language_id = db.Column(db.Integer, db.ForeignKey('language.id'), primary_key=True)
+	name = db.Column(db.String(124), index=True, nullable=False)
+	car = db.relationship('Car', back_populates='names')
+	language = db.relationship('Language', back_populates='cars')
+
+
+	def __init__(self, language, name):
+		self.language = language
+		self.name = name
+	
+	def __repr__(self):
+		return '<CarLanguage {} {}>'.format(self.language.code, self.name)
+
+

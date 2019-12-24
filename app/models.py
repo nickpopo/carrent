@@ -15,7 +15,9 @@ class User(UserMixin, db.Model):
 	password_hash = db.Column(db.String(128))
 	language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
 	language = db.relationship('Language', back_populates='users')
-	
+	cars = db.relationship('Car', secondary=lambda: usercar_table,
+				back_populates='users', lazy='dynamic')
+
 	def __repr__(self):
 		return '<User {}>'.format(self.username)
 
@@ -43,6 +45,13 @@ class User(UserMixin, db.Model):
 def load_user(id):
 	return User.query.get(int(id))
 
+
+usercar_table = db.Table('usercar', db.Model.metadata,
+	db.Column('user_id', db.Integer, db.ForeignKey('user.id'),
+			  primary_key=True),
+	db.Column('car_id', db.Integer, db.ForeignKey('car.id'),
+			  primary_key=True)
+	)
 
 class Language(db.Model):
 	id = db.Column(db.Integer, primary_key=True)
@@ -81,11 +90,11 @@ class Car(db.Model):
 	names = db.relationship('CarLanguage', cascade='all, delete-orphan', 
 							back_populates='car', lazy='dynamic')
 	timestamp = db.Column(db.DateTime, default=datetime.utcnow)
-
+	users = db.relationship('User', secondary=usercar_table,
+			back_populates='cars', lazy='dynamic')
 
 	def __repr__(self):
 		return '<Car {}>'.format(self.get_name('en'))
-
 
 	# Get car's name for particular language. 
 	def get_name(self, code='en'):

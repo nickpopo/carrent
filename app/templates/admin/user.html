@@ -6,24 +6,25 @@
 		<tr>
 			<td>
 				<h1>User: {{ user.username }}</h1>
-				{% if user == current_user %}
 					<p>
-						<a href="{{ url_for('main.edit_profile') }}">
-							Edit your profile
+						<a href="{{ url_for('admin.edit_user_profile', id=user.id) }}">
+							Edit profile
 						</a>
 					</p>
-				{% endif %}
 			</td>
 		</tr>
 	</table>
 	
-	{% if user.is_administrator() %}
+	{% if current_user.is_administrator() %}
+	{% if not form %}
+	<p>Not more cars to add.</p>
+	{% else %}
 	<div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}
         </div>
     </div>
-
+	{% endif %}
 	<h2>User's cars</h2>
 	<table class="table table-striped table-hover">
  		<thead>
@@ -33,7 +34,7 @@
  		</thead>
  		<tbody>
  			{% for car in cars %}
- 				{% include '_car.html' %}
+ 				{% include 'admin/_car.html' %}
  			{% endfor %}
  		</tbody>
 	</table>

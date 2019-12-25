@@ -72,6 +72,16 @@ class Role(db.Model, FormChoicesMixin):
 		return self.name
 
 
+########################
+###### USER MODEL ######
+########################
+usercar_table = db.Table('usercar', db.Model.metadata,
+	db.Column('user_id', db.Integer, db.ForeignKey('user.id'),
+			  primary_key=True),
+	db.Column('car_id', db.Integer, db.ForeignKey('car.id'),
+			  primary_key=True)
+	)
+
 class User(UserMixin, db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	username = db.Column(db.String(64), index=True, unique=True)
@@ -80,7 +90,7 @@ class User(UserMixin, db.Model):
 	language_id = db.Column(db.Integer, db.ForeignKey('language.id'))
 	language = db.relationship('Language', back_populates='users')
 	role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
-	cars = db.relationship('Car', secondary=lambda: usercar_table,
+	cars = db.relationship('Car', secondary=usercar_table,
 				back_populates='users', lazy='dynamic')
 	timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
@@ -133,14 +143,6 @@ login.anonymous_user = AnonymousUser
 @login.user_loader
 def load_user(id):
 	return User.query.get(int(id))
-
-
-usercar_table = db.Table('usercar', db.Model.metadata,
-	db.Column('user_id', db.Integer, db.ForeignKey('user.id'),
-			  primary_key=True),
-	db.Column('car_id', db.Integer, db.ForeignKey('car.id'),
-			  primary_key=True)
-	)
 
 
 class Language(db.Model, FormChoicesMixin):

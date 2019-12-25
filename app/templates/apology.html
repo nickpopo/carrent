@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+    <img alt="{{ top }}" class="border" src="http://memegen.link/custom/{{ top | urlencode }}/{{ bottom | urlencode }}.jpg?alt=https://i.imgur.com/CsCgN7Ll.png" title="{{ top }}">
+{% endblock %}

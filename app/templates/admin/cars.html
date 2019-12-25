@@ -2,13 +2,17 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
-	<h1>Hi, {{ current_user.username }}</h1>
-
+	<h1>Explore Cars</h1>
 	<br>
-	
+	<div class="btn-group">
+		<a href="{{ url_for('admin.create_car') }}" class="btn btn-info">Add Car</a>
+	</div>
+	<br>
+	<br>
 	{% if not cars %}
-	<p>You have't yet cars.</p>
+	<p>No yet cars.</p>
 	{% else %}
+	<br>
 	<table class="table table-striped table-hover">
  		<thead>
  			<th>Name</th>
@@ -21,7 +25,7 @@
  			{% endfor %}
  		</tbody>
 	</table>
-
+	<!-- Pagination -->
 	<nav aria-label="...">
 		<ul class="pager">
 			<li class="previous{% if not prev_url %} disabled{% endif %}">

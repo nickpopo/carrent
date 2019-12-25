@@ -79,6 +79,7 @@ class User(UserMixin, db.Model):
 	role_id = db.Column(db.Integer, db.ForeignKey('role.id'))
 	cars = db.relationship('Car', secondary=lambda: usercar_table,
 				back_populates='users', lazy='dynamic')
+	timestamp = db.Column(db.DateTime, default=datetime.utcnow, index=True)
 
 	def __init__(self, **kwargs):
 		super(User, self).__init__(**kwargs)

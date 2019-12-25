@@ -104,7 +104,27 @@ def delete_car(id):
 @login_required
 @admin_required
 def users():
-	return 'TODO'
+	page = request.args.get('page', 1, type=int)
+	users = User.query.order_by(User.username.asc()).paginate(
+		page, current_app.config['POSTS_PER_PAGE'], False)
+	next_url = url_for('.users', page=users.next_num) \
+					   if users.has_next else None
+	prev_url = url_for('.users', page=users.prev_num) \
+					   if users.has_prev else None
+	return render_template('admin/users.html', title='Explore Users', users=users.items, 
+							next_url=next_url, prev_url=prev_url)
+
+
+@bp.route('/users/delete/<int:id>')
+@login_required
+@admin_required
+def delete_user(id):
+	user = User.query.first_or_404(id)
+	username = user.username
+	db.session.delete(user)
+	db.session.commit()
+	flash('User {} was successfuly deleted'.format(username))
+	return redirect(url_for('.users'))
 
 
 @bp.route('/user/<username>', methods=['GET', 'POST'])

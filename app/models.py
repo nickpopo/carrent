@@ -8,7 +8,7 @@ from app import db, login
 from flask_login import UserMixin, AnonymousUserMixin
 
 
-class FormMixin(object):
+class FormChoicesMixin(object):
 	
 	@classmethod
 	def choices(cls):
@@ -21,7 +21,7 @@ class Permission:
 	USER = 1
 	ADMIN = 2
 
-class Role(db.Model):
+class Role(db.Model, FormChoicesMixin):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(64), unique=True)
 	default = db.Column(db.Boolean, default=False, index=True)
@@ -67,6 +67,9 @@ class Role(db.Model):
 
 	def has_permission(self, perm):
 		return self.permissions & perm == perm
+
+	def get_name(self):
+		return self.name
 
 
 class User(UserMixin, db.Model):
@@ -140,7 +143,7 @@ usercar_table = db.Table('usercar', db.Model.metadata,
 	)
 
 
-class Language(db.Model, FormMixin):
+class Language(db.Model, FormChoicesMixin):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(64), unique=True)
 	code = db.Column(db.String(5), unique=True)
@@ -166,7 +169,7 @@ class Language(db.Model, FormMixin):
 		return self.name
 
 
-class Car(db.Model, FormMixin):
+class Car(db.Model, FormChoicesMixin):
 	id = db.Column(db.Integer, primary_key=True)
 	year = db.Column(db.String(4), index=True)
 	names = db.relationship('CarLanguage', cascade='all, delete-orphan', 

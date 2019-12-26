@@ -1,0 +1,12 @@
+Dear {{ user.username }},
+{% if about == 'add' %}
+Notice you that a new car was added to your account.
+{% else %}
+Notice you that a car was deleted from your account.
+{% endif %}
+You can check your account now by clicking on the link below.
+{{ url_for('auth.login', _external=True) }} 
+
+Sincerely,
+
+The Carrent Team

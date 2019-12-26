@@ -171,6 +171,9 @@ class Language(db.Model, FormChoicesMixin):
 		return self.name
 
 
+########################
+###### CAR MODEL ######
+########################
 class Car(db.Model, FormChoicesMixin):
 	id = db.Column(db.Integer, primary_key=True)
 	year = db.Column(db.String(4), index=True)
@@ -185,11 +188,14 @@ class Car(db.Model, FormChoicesMixin):
 
 	# Get car's name for particular language. 
 	def get_name(self, code_lang='en', year=True):
-		q = self.names.join('language').filter(Language.code==code_lang).one()
-		if not q:
-			return
+		q = self.names.join('language').filter(Language.code==code_lang).first()
+		# If it does not have a name for the selected language, give the default 'en'.
+		if not q.name:
+			q = self.names.join('language').filter(Language.code=='en').first() 
+		# Return without year.
 		if not self.year:
 			return q.name
+		# Return with year.
 		return '|'.join((q.name, self.year)) if year else q.name
 
 

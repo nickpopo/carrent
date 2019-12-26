@@ -1,0 +1,12 @@
+<p>Dear {{ user.username }},</p>
+{% if about == 'add' %}
+<p>Notice you that a new car was added to your account.</p>
+{% else %}
+<p>Notice you that a car was deleted from your account.</p>
+{% endif %}
+<p>
+	You can check your account now by clicking on the link below.<br>
+	{{ url_for('auth.login', _external=True) }}
+</p>
+<p>Sincerely,</p>
+<p>The Carrent Team</p>

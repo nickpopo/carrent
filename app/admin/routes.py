@@ -4,6 +4,7 @@ from app import db
 from app.decorators import admin_required
 from app.models import User, Car, Language, CarLanguage
 from .forms import UserForm, EditUserProfileForm, UserAddCarForm, CarForm
+from .email import send_notice_user_about_car_email
 from . import bp
 
 
@@ -43,6 +44,7 @@ def user(id):
 		car = Car.query.get(form.car.data)
 		user.cars.append(car)
 		db.session.commit()
+		send_notice_user_about_car_email(user=user, about='add')
 		flash('Successfuly add {} to {}'.format(car.get_name(), user.username))
 		return redirect(url_for('.user', id=user.id))
 	elif request.method == 'GET':
@@ -52,6 +54,7 @@ def user(id):
 			remove_car = Car.query.get_or_404(int(remove_car))
 			user.cars.remove(remove_car)
 			db.session.commit()
+			send_notice_user_about_car_email(user=user, about='remove')
 			return redirect(url_for('.user', id=user.id))
 	if not form.car.choices:
 		form = None

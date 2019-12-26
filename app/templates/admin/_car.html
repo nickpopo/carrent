@@ -1,5 +1,5 @@
 	<tr>
-		<td>{{ car.get_name(code_lang=current_user.language.code, year=False) }}</td>
+		<td>{{ car.get_name(current_user.language.code, False) }}</td>
 		<td>{{ car.year }}</td>
 		<td>{{ car.timestamp }}</td>
 		{% if current_user.is_administrator() %}

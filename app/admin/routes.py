@@ -26,7 +26,7 @@ def users():
 							next_url=next_url, prev_url=prev_url)
 
 
-@bp.route('/user/<int:id>', methods=['GET', 'POST'])
+@bp.route('/users/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def user(id):
@@ -62,7 +62,7 @@ def user(id):
 				user=user, form=form, cars=cars.items, next_url=next_url, prev_url=prev_url) 
 
 
-@bp.route('/user/edit_profile/<int:id>', methods=['GET', 'POST'])
+@bp.route('/users/edit_profile/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_user_profile(id):
@@ -88,7 +88,7 @@ def edit_user_profile(id):
 
 
 
-@bp.route('/user/create', methods=['GET', 'POST'])
+@bp.route('/users/create', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def create_user():
@@ -109,7 +109,7 @@ def create_user():
 	return render_template('admin/create_user.html', title='Create new user', form=form)
 
 
-@bp.route('/user/delete/<int:id>')
+@bp.route('/users/delete/<int:id>')
 @login_required
 @admin_required
 def delete_user(id):

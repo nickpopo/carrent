@@ -1,5 +1,5 @@
 	<tr>
-		<td>{{ car.get_name(code_lang=current_user.language.code, year=False) }}</td>
+		<td>{{ car.get_name(year=False) }}</td>
 		<td>{{ car.year }}</td>
 		<td>{{ car.timestamp }}</td>
 		{% if current_user.is_administrator() %}
@@ -7,13 +7,15 @@
 			<!-- Split button -->
 			<div class="btn-group">
 			  <button type="button" class="btn btn-default">
-				<a href="{{ url_for('admin.edit_car', id=car.id) }}">Edit</a>
+				<a href="{{ url_for('admin.user', id=user.id, remove_car=car.id) }}">Remove</a>
 			  </button>
 			  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 			    <span class="caret"></span>
 			    <span class="sr-only">Toggle Dropdown</span>
 			  </button>
 			  <ul class="dropdown-menu">
+			  	<li><a href="{{ url_for('admin.edit_car', id=car.id) }}">Edit</a></li>
+			  	<li role="separator" class="divider"></li>
 			    <li><a href="{{ url_for('admin.delete_car', id=car.id) }}" style="color:red;">Delete</a></li>
 			  </ul>
 			</div>

@@ -3,11 +3,12 @@ from datetime import datetime
 from time import time
 import jwt
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import current_app
+from flask import current_app, url_for
 from app import db, login
 from flask_login import UserMixin, AnonymousUserMixin
 
 
+### Mixins classes ###
 class FormChoicesMixin(object):
 	
 	@classmethod
@@ -17,11 +18,37 @@ class FormChoicesMixin(object):
 			choices.append((obj.id, obj.get_name()))
 		return choices
 
+class PaginatedAPIMixin(object):
+	@staticmethod
+	def to_collection_dict(query, page, per_page, endpoint, **kwargs):
+		resources = query.paginate(page, per_page, False)
+		data = {
+			'items': [item.to_dict() for item in resources.items],
+			'meta': {
+				'page': page,
+				'per_page': per_page,
+				'total_pages': resources.pages,
+				'total_items': resources.total
+			},
+			'_links': {
+				'self': url_for(endpoint, page=page, per_page=per_page,
+								**kwargs),
+				'next': url_for(endpoint, page=page + 1, per_page=per_page,
+								**kwargs) if resources.has_next else None,
+				'prev': url_for(endpoint, page=page - 1, per_page=per_page,
+								**kwargs) if resources.has_prev else None
+			}
+		}
+		return data
+
+### End Mixins classes ###
+
+
 class Permission:
 	USER = 1
 	ADMIN = 2
 
-class Role(db.Model, FormChoicesMixin):
+class Role(FormChoicesMixin, db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	name = db.Column(db.String(64), unique=True)
 	default = db.Column(db.Boolean, default=False, index=True)
@@ -82,7 +109,7 @@ usercar_table = db.Table('usercar', db.Model.metadata,
 			  primary_key=True)
 	)
 
-class User(UserMixin, db.Model):
+class User(PaginatedAPIMixin, UserMixin, db.Model):
 	id = db.Column(db.Integer, primary_key=True)
 	username = db.Column(db.String(64), index=True, unique=True)
 	email = db.Column(db.String(120), index=True, unique=True)
@@ -130,6 +157,33 @@ class User(UserMixin, db.Model):
 
 	def is_administrator(self):
 		return self.can(Permission.ADMIN)
+
+	# Related to api functional.
+	def to_dict(self, include_email=False):
+		data = {
+			'id': self.id,
+			'username': self.username,
+			'language_code': self.language.code,
+			'car_count': self.cars.count(),
+			'_links': {
+				'self': url_for('api.get_user', id=self.id),
+				'cars': url_for('api.get_user_cars', id=self.id)
+			}
+		}
+		if include_email:
+			data['email'] = self.email
+		return data
+
+	def from_dict(self, data, new_user=False):
+		for field in ['username', 'email', 'language_code']:
+			if field in data:
+				if field == 'language_code':
+					language = Language.query.filter_by(code=data[field]).first()
+					setattr(self, 'language', language)
+				setattr(self, field, data[field])
+		if new_user and 'password' in data:
+			self.set_password(data['password'])
+
 
 class AnonymousUser(AnonymousUserMixin):
 	def can(self, permissions):
@@ -197,6 +251,29 @@ class Car(db.Model, FormChoicesMixin):
 			return q.name
 		# Return with year.
 		return '|'.join((q.name, self.year)) if year else q.name
+
+	# Related to api functional.
+	def to_dict(self):
+		data = {
+			'id': self.id,
+			'year': self.year,
+			'users_count': self.users.count(),
+			'_links': {
+				'self': url_for('api.get_car', id=self.id)
+			}
+		}
+		data['name'] = self.get_name(year=False)
+		return data
+
+	# def from_dict(self, data):
+	# 	for field in ['id', 'name', 'year']:
+	# 		if field in data:
+	# 			if field == 'language_code':
+	# 				language = Language.query.filter_by(code=data[field]).first()
+	# 				setattr(self, 'language', language)
+	# 			setattr(self, field, data[field])
+	# 	if new_user and 'password' in data:
+	# 		self.set_password(data['password'])
 
 
 # Association table.

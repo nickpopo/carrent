@@ -199,7 +199,7 @@ def edit_car(id):
 		return redirect(url_for('.cars'))
 
 	for code in lang_codes:
-		form[code].data = car.get_name(code_lang=code, year=False)
+		form[code].data = car.get_name(code, False)
 	form.year.data = car.year
 
 	return render_template('admin/edit_car.html', title='Edit Car', form=form)
@@ -210,7 +210,7 @@ def edit_car(id):
 @admin_required
 def delete_car(id):
 	car = Car.query.get_or_404(id)
-	name = car.get_name(code_lang='en', year=False)
+	name = car.get_name('en', False)
 	db.session.delete(car)
 	db.session.commit()
 	flash('Car {} was successfuly deleted.'.format(name))

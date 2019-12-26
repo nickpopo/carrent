@@ -25,7 +25,6 @@ class PaginatedAPIMixin(object):
 	def to_collection_dict(query, page, per_page, endpoint, **kwargs):
 		resources = query.paginate(page, per_page, False)
 		data = {
-			'items': [item.to_dict() for item in resources.items],
 			'meta': {
 				'page': page,
 				'per_page': per_page,
@@ -41,6 +40,12 @@ class PaginatedAPIMixin(object):
 								**kwargs) if resources.has_prev else None
 			}
 		}
+		if kwargs.get('lang_code'):
+			data['items'] = [item.to_dict(lang_code=kwargs['lang_code']) for item in resources.items]
+		elif kwargs.get('include_email'):
+			data['items'] = [item.to_dict(include_email=kwargs['include_email']) for item in resources.items]
+		else:
+			data['items'] = [item.to_dict() for item in resources.items]
 		return data
 
 ### End Mixins classes ###
@@ -264,8 +269,8 @@ class Car(db.Model, FormChoicesMixin):
 		return '<Car {}>'.format(self.get_name('en'))
 
 	# Get car's name for particular language. 
-	def get_name(self, code_lang='en', year=True):
-		q = self.names.join('language').filter(Language.code==code_lang).first()
+	def get_name(self, lang_code='en', year=True):
+		q = self.names.join('language').filter(Language.code==lang_code).first()
 		# If it does not have a name for the selected language, give the default 'en'.
 		if not q.name:
 			q = self.names.join('language').filter(Language.code=='en').first() 
@@ -276,7 +281,7 @@ class Car(db.Model, FormChoicesMixin):
 		return '|'.join((q.name, self.year)) if year else q.name
 
 	# Related to api functional.
-	def to_dict(self):
+	def to_dict(self, lang_code='en'):
 		data = {
 			'id': self.id,
 			'year': self.year,
@@ -285,18 +290,14 @@ class Car(db.Model, FormChoicesMixin):
 				'self': url_for('api.get_car', id=self.id)
 			}
 		}
-		data['name'] = self.get_name(year=False)
+		if lang_code != 'en':
+			data['default_name'] = self.get_name(year=False)
+		data['name'] = self.get_name(lang_code, False)
 		return data
 
-	# def from_dict(self, data):
-	# 	for field in ['id', 'name', 'year']:
-	# 		if field in data:
-	# 			if field == 'language_code':
-	# 				language = Language.query.filter_by(code=data[field]).first()
-	# 				setattr(self, 'language', language)
-	# 			setattr(self, field, data[field])
-	# 	if new_user and 'password' in data:
-	# 		self.set_password(data['password'])
+	def from_dict(self, data):
+		pass
+
 
 
 # Association table.

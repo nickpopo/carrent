@@ -33,6 +33,11 @@ def user(username):
 @bp.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
+	if current_app.config['ADMIN_LOCKED']:
+		super_admin = User.query.filter_by(username='admin').first()
+	if current_user == super_admin:
+		flash('Super admin\'s profile is locked')
+		return redirect(url_for('.user', username=current_user.username))
 	form = EditProfileForm(current_user.username)
 	if form.validate_on_submit():
 		current_user.username = form.username.data

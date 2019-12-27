@@ -1,1 +1,1 @@
-web: flask db upgrade; gunicorn carrent:app
+web: flask db upgrade; flask deploy required; gunicorn carrent:app

@@ -11,6 +11,7 @@ from . import bp
 # # # # # # # # # # # #
 #  Routes for Users.  #
 # # # # # # # # # # # #
+# Get all users.
 @bp.route('/users')
 @login_required
 @admin_required
@@ -23,9 +24,9 @@ def users():
 	prev_url = url_for('.users', page=users.prev_num) \
 					   if users.has_prev else None
 	return render_template('admin/users.html', title='Explore Users', users=users.items, 
-							next_url=next_url, prev_url=prev_url)
+							total=users.total, next_url=next_url, prev_url=prev_url)
 
-
+# Get user's settings (cars, profile).
 @bp.route('/users/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -59,14 +60,22 @@ def user(id):
 	if not form.car.choices:
 		form = None
 	return render_template('admin/user.html', title='User\'s Profile', 
-				user=user, form=form, cars=cars.items, next_url=next_url, prev_url=prev_url) 
+				user=user, form=form, cars=cars.items, total_cars=cars.total,
+				next_url=next_url, prev_url=prev_url) 
 
-
+# Edit user's profile.
 @bp.route('/users/edit_profile/<int:id>', methods=['GET', 'POST'])
 @login_required
 @admin_required
 def edit_user_profile(id):
 	user = User.query.get_or_404(id)
+
+	if current_app.config['ADMIN_LOCKED']:
+		super_admin = User.query.filter_by(username='admin').first()
+	if user == super_admin:
+		flash('Super admin\'s profile is locked')
+		return redirect(url_for('.user', id=user.id))
+
 	form = EditUserProfileForm(original_username = user.username,
 							   original_email = user.email)
 	if form.validate_on_submit():
@@ -84,10 +93,7 @@ def edit_user_profile(id):
 	form.role.data = user.role_id
 	return render_template('admin/edit_user_profile.html', title='Update user\'s profile', form=form)
 
-
-
-
-
+# Create user.
 @bp.route('/users/create', methods=['GET', 'POST'])
 @login_required
 @admin_required
@@ -108,18 +114,24 @@ def create_user():
 
 	return render_template('admin/create_user.html', title='Create new user', form=form)
 
-
+# Delete user.
 @bp.route('/users/delete/<int:id>')
 @login_required
 @admin_required
 def delete_user(id):
 	user = User.query.get_or_404(id)
-	username = user.username
-	db.session.delete(user)
-	db.session.commit()
-	flash('User {} was successfuly deleted'.format(username))
+	admin_locked = current_app.config['ADMIN_LOCKED']
+	super_admin = None
+	if admin_locked: 
+		super_admin = User.query.filter_by(username='admin').first()
+	if user != super_admin:
+		username = user.username
+		db.session.delete(user)
+		db.session.commit()
+		flash('User {} was successfuly deleted'.format(username))
+	else: 
+		flash('Can\'t delete super admin')
 	return redirect(url_for('.users'))
-
 
 
 # # # # # # # # # # #
@@ -137,7 +149,7 @@ def cars():
 	prev_url = url_for('.cars', page=cars.prev_num) \
 		if cars.has_prev else None
 	return render_template('admin/cars.html', title='Cars', cars=cars.items,
-						   next_url=next_url, prev_url=prev_url)
+						   total=cars.total, next_url=next_url, prev_url=prev_url)
 
 
 @bp.route('/cars/create', methods=['GET', 'POST'])

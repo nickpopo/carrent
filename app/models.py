@@ -268,7 +268,10 @@ class Car(db.Model, FormChoicesMixin):
 	def __repr__(self):
 		return '<Car {}>'.format(self.get_name('en'))
 
-	# Get car's name for particular language. 
+	# Car names. 
+	def set_name(self, language, name):
+		self.names.append(CarLanguage(language, name))
+
 	def get_name(self, lang_code='en', year=True):
 		q = self.names.join('language').filter(Language.code==lang_code).first()
 		# If it does not have a name for the selected language, give the default 'en'.

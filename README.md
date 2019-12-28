@@ -3,33 +3,33 @@
 ### TASK:
 We are developing a system that provides the organization with a car rental service.
 
-The user can rent various cars, and the car can be rented to various users.
+A user can rent various cars, and a car can be rented to various users.
 
 The user has attributes email, name, language (en, ru). 
 
-Machines have attributes name (set in two languages ​​en, ru, 
+The Car has attributes name (set in two languages en, ru, 
 implementation to be done taking into account possible increase in languages), 
-year of creation, and date of adding the machine to the system.
+year of creation, and date of adding a car to the system.
 
 It is necessary to implement RestAPI with the following functionality:
 - register user
-- get user machines (self, admin)
+- get user cars (self, admin)
 - change user data (self, admin)
 - get all users (admin)
 For api you need to use token based authentication.
-By RestApi, the name of the machine is given in the user's language.
+By RestApi, the name of the car must be reveived in the user's language.
  
 The site should provide the following functionality:
 - register user / login
-- add a car to the system
-- add car to user
+- create a new car
+- add a car to a user
 - User information
 - change user information
 
 An unauthorized user can only access the user register / login page;
 when other pages are opened, an unauthorized user should be redirected to the register user / login page.
 
-When adding a machine, a letter is sent to the user.
+When adding a car, email is sent to the user.
 
 For authorization, a pair of email password is used.
 

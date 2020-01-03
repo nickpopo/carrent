@@ -76,3 +76,30 @@ $ heroku run flask deploy create-cars <COUNT>
 ```
 
 done.
+
+
+## Using of API
+- Create new user
+```
+http POST http://flask-carrent.herokuapp.com/api/users username=testtest1234 language_code=ru password=password email=test@example.com
+```
+- Request token fot Authenticated user:
+```
+http --auth <username>:<password> POST http://flask-carrent.herokuapp.com/api/tokens
+```
+- Get all users (only admin)
+```
+http GET http://flask-carrent.herokuapp.com/api/users "Authorization:Bearer <token>”
+```
+- Get user resource (self, admin)
+```
+http GET http://flask-carrent.herokuapp.com/api/users/<user_id> "Authorization:Bearer <token>”
+```	
+- Get all user's cars (self, admin)
+```
+http GET http://flask-carrent.herokuapp.com/api/users/<user_id>/cars "Authorization:Bearer <token>”
+```	
+- Update user's data (self, admin)
+```
+http PUT http://flask-carrent.herokuapp.com/api/users/<user_id> username=testtest12 language_code=en "Authorization:Bearer <token>”
+```

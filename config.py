@@ -27,3 +27,5 @@ class Config(object):
 
 	# Backside settings.
 	ADMIN_LOCKED = os.environ.get('ADMIN_LOCKED') or True
+	
+	# Add something here
